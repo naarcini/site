@@ -1,7 +1,7 @@
+from django.template import Context, loader
 from django.http import HttpResponse
-from django.template import RequestContext
-from django.shortcuts import render_to_response
 
 def index(request):
-    response = {}
-    return HttpResponse(render_to_response('nicolas/index.html', response, context_instance=RequestContext(request)))
+	t = loader.get_template('home/index.html')
+	c = Context({})
+	return HttpResponse(t.render(c))

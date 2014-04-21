@@ -4,9 +4,8 @@ from django.conf.urls import patterns, include, url
 # from django.contrib import admin
 # admin.autodiscover()
 
-urlpatterns = patterns('nicolas.views',
-    # Examples:
-    # url(r'^$', 'nicolas.views.home', name='home'),
+urlpatterns = patterns('',
+    url(r'^$', 'nicolas.views.index', name='index'),
     # url(r'^nicolas/', include('nicolas.foo.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:
