@@ -74,15 +74,15 @@ function change_state(newstate) {
             break;
         case 1:
             $('#menu_resume').addClass('selected');
-            animate_resume(state, newstate);
+            animate_content('/resume', state, newstate);
             break;
         case 2:
             $('#menu_links').addClass('selected');
-            animate_links(state, newstate);
+            animate_content('/links', state, newstate);
             break;
         case 3:
             $('#menu_contact').addClass('selected');
-            animate_contact(state, newstate);
+            animate_content('/contact', state, newstate);
             break;
         default:
             break;
@@ -115,26 +115,20 @@ function animate_home(oldstate, newstate) {
     $('#general_container').fadeOut(1000);
 }
 
-function animate_resume(oldstate, newstate) {
-    if(oldstate == 0)
+function animate_content(url, oldstate, newstate) {
+    if(oldstate == 0) {
         slide_menu_left();
-    
-    $('#general_container').load('/resume', function() {
-    });
-}
-
-function animate_links(oldstate, newstate) {
-    if(oldstate == 0)
-        slide_menu_left();
-
-    
-}
-
-function animate_contact(oldstate, newstate) {
-    if(oldstate == 0)
-        slide_menu_left();
-
-    
+        $('#general_container').load(url, function() {
+            $('#general_container').fadeIn(1000);
+        });
+    }
+    else {
+        $('#general_container').fadeOut(500, function() {
+            $('#general_container').load(url, function() {
+                $('#general_container').fadeIn(500);
+            })
+        });
+    }
 }
 
 });
