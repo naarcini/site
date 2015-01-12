@@ -20,3 +20,15 @@ def comingsoon(request):
     response = {}
     return template_response('comingsoon.html', response, request)
 
+def webapp(request):
+    response = {}
+    return template_response('robotapp.html', response, request)
+
+def getInstruction(request):
+    response = {}
+    return json_response('{instruction: "Not Implemented"}')
+
+def updateMap(request):
+    response = {}
+    return json_response('{instruction: "Not Implemented"}')
+

@@ -12,6 +12,11 @@ urlpatterns = patterns('nicolas.views',
     # url(r'^contact/', 'contact', name='contact'),
     # url(r'^nicolas/', include('nicolas.foo.urls')),
 
+    # Indoor Robotic Navigation System URLs
+    url(r'^webapp/', 'webapp', name='webapp'),
+    url(r'^getInstruction/', 'getInstruction', name='getInstruction'),
+    url(r'^updateMap/', 'updateMap', name='updateMap'),
+
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
