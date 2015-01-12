@@ -16,3 +16,7 @@ def contact(request):
     response = {}
     return template_response('contact.html', response, request)
 
+def comingsoon(request):
+    response = {}
+    return template_response('comingsoon.html', response, request)
+
