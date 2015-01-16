@@ -1,0 +1,52 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <title>IRNS Control</title>
+        <!--<link href="{{ STATIC_URL }}styles/robot.css" rel="stylesheet" type="text/css">
+        <script type="text/javascript" charset="utf-8" src="{{ STATIC_URL }}scripts/jquery-1.11.0.min.js"></script>
+        <script type="text/javascript" charset="utf-8" src="{{ STATIC_URL }}scripts/robot.js"></script>-->
+        <link href="../static/styles/robot.css" rel="stylesheet" type="text/css">
+        <script type="text/javascript" charset="utf-8" src="../static/scripts/jquery-1.11.0.min.js"></script>
+        <script type="text/javascript" charset="utf-8" src="../static/scripts/robot.js"></script>
+    </head>
+    <body>
+        <div id="title-container" class="white-box">
+            <h1>Indoor Robotic Navigation System:<br /> Control Panel</h1>
+        </div>
+        <div id="control-panel">
+            <div id="map-controls">
+                <img id="map" alt="placeholder" src="../static/images/ShrugEmoticon.jpg" />
+                <br />
+                <input id="map-zoom" type="range" min="0" max="100" step="10" value="50" /> 
+                <span id="map-zoom-feedback" class="white-box">50 %</span>
+            </div>
+            
+            <div class="interface white-box" id="coordinates">
+                <h2>Coordinates:</h2>
+                <ul>
+                    <li>X: <span class="coordinate xPos">1234</span> cm</li>
+                    <li>Y: <span class="coordinate yPos">1234</span> cm</li>
+                </ul>
+            </div>
+            <br />
+            <div class="interface white-box" id="target">
+                <h2>Target:</h2>
+                <form action="" method="POST">
+                <ul>
+                    <li><label for="x-target">X</label>: <input type="text" name="x-target" class="coordinate x-pos" value="1234" /> cm</li>
+                    <li><label for="y-target">Y</label>: <input type="text" name="y-target" class="coordinate y-pos" value="1234" /> cm</li>
+                    <li><input type="submit" value="Push to Robot" /></li>
+                </ul>
+                </form>
+            </div>
+            <br />
+            <div class="interface white-box" id="legend">
+                <h2>Legend:</h2>
+                <ul>
+                    <li>some-image in legend</li>
+                    <li>some-image in legend</li>
+                </ul>
+            </div>
+        </div>
+    </body>
+</html>
