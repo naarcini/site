@@ -14,6 +14,9 @@ class Coordinate(object):
         self.x = x
         self.y = y
 
+    def ValidateExists(self):
+        return (self.x is not None and self.y is not None)
+
     def Dictify(self):
         return {'x': self.x, 'y': self.y}
 
@@ -22,13 +25,13 @@ class MetaData(object):
     Stores metadata about project"
     """
     def __init__(self):
-        self.length = 650
-        self.width = 650
+        self.xMax = 650
+        self.yMax = 650
         self.units = "dm"
         self.origin = Coordinate(325, 325)
 
     def Dictify(self):
-        return {'length': self.length, 'width': self.width, 'units': self.units, 'origin': self.origin.Dictify()}
+        return {'xMax': self.xMax, 'yMax': self.yMax, 'units': self.units, 'origin': self.origin.Dictify()}
 
 # Robot related
 
@@ -38,13 +41,17 @@ class RobotObject(object):
     """
     def __init__(self, identity):
         self.identity = identity
-        self.position = Coordinate(-1, -1)
-        self.target = Coordinate(-1, -1)
+        self.position = Coordinate(None, None)
+        self.positionMetric = Coordinate(None, None)
+        self.target = Coordinate(None, None)
+        self.targetMetric = Coordinate(None, None)
         self.waypoints = []
 
-    def Update(self, position, target, waypoints):
+    def Update(self, position, positionMetric, target, targetMetric, waypoints):
         self.position = position
+        self.positionMetric = positionMetric
         self.target = target
+        self.targetMetric = targetMetric
         self.waypoints = waypoints
 
     def Dictify(self):
@@ -59,13 +66,24 @@ class Cell(object):
     Stores state of each individual cell in grid
     """
     def __init__(self):
-        self.state = CellState.unexplored
-        self.coordinate = Coordinate(-1, -1)
+        self.state = None
+        self.coordinate = Coordinate(None, None)
 
     def Update(self, cellState, coordinate):
         self.state = cellState
         self.coordinate = coordinate
 
+    def ValidateCoordinates(self):
+        return (
+                self.coordinate.ValidateExists()
+            and self.coordinate.x in range(-MetaData.origin.x, MetaData.xMax - MetaData.origin.x)
+            and self.coordinate.y in range (-MetaData.origin.y, MetaData.yMax - MetaData.origin.y)
+            )
+
+    def ValidatePopulated(self):
+        return (self.ValidateCoordinates() and self.state is not None)
+
+
     def Dictify(self):
-        return {'state': self.state, 'coordinate': self.coordinate.Dictify()}
+        return {'state': self.state, 'x': self.coordinate.x, 'y': self.coordinate.y}
     

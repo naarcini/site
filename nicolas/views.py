@@ -1,6 +1,6 @@
 from nicolas.shortcuts import template_response, json_response, html_response
 from nicolas.dataObjects import Coordinate, MetaData, RobotObject, CellState, Cell
-from nicolas.serverFunctions import ClearRobot, ResetMap, ResetInstruction, ResetDb, GetRobotId, JsonToRobot, JsonToCellArray, JsonToInstruction, UpdateRobot, UpdateMap, UpdateInstruction, DrawMap
+from nicolas.serverFunctions import ClearRobot, ResetMap, CheckMap, ResetInstruction, ResetDb, GetRobotId, JsonToRobot, JsonToCellArray, JsonToInstruction, UpdateRobot, UpdateMap, UpdateInstruction, DrawMap
 
 def index(request):
     response = {}
@@ -117,23 +117,82 @@ def serverMap(request):
         To be used primarily by robot to update map
 
     GET:
-        Gets full stored map
+        Gets specified cells and updates PNG file
     POST:
         Update section of map
     DELETE:
         Resets map
     """
     if request.method == "GET":
-        # Get full stored map in JSON blob
-        response = {}
+        # Get specified map segments in JSON blob and update PNG file
+        mapResult = DrawMap()
+        blob = request.read()
+        result = JsonToCellArray(blob)
+
+        if result[0] == 'error':
+            response =
+            {
+                'status': result[0],
+                'details': result[1],
+                'drawStatus': mapResult[0],
+                'drawDetails': mapResult[1],
+            }
+            return json_response(response)
+
+        requestCellArray = result[2]
+        responseCellArray = []
+        CheckMap()
+
+        for cell in requestCellArray:
+            if cell.ValidateCoordinate():
+                mapData = Map.objects.get(x = cell.coordinate.x, y = cell.coordinate.y)
+                cell.state = mapData.state
+                responseCellArray.append(cell)
+
+        response =
+        {
+            'status': 'ok',
+            'details': [ cell.Dictify() for cell in responseCellArray ],
+            'drawStatus': mapResult[0],
+            'drawDetails': mapResult[1],
+        }
 
     elif request.method == "POST":
         # Update map bits specified in call
-        response = {}
+        blob = request.read()
+        result = JsonToCellArray(blob)
+
+        if result[0] == 'error':
+            response =
+            {
+                'status': result[0],
+                'details': result[1],
+            }
+            return json_response(response)
+
+        requestCellArray = result[2]
+        CheckMap()
+
+        for cell in requestCellArray:
+            if cell.ValidatePopulated():
+                mapData = Map.objects.get(x = cell.coordinate.x, y = cell.coordinate.y)
+                mapData.state = cell.state
+                mapData.save()
+
+        response =
+        {
+            'status': 'ok',
+            'details': 'Successfully updated map',
+        }
 
     elif request.method == "DELETE":
         # Reset map in DB
-        reponse = {}
+        result = ResetMap()
+        reponse =
+        {
+            'status': result[0],
+            'details': result[1],
+        }
 
     else:
         response =
@@ -154,7 +213,12 @@ def masterReset(request):
     """
     if request.method == "DELETE":
         # Delete everything
-        response = {}
+        result = ResetDb()
+        response =
+        {
+            'status': result[0],
+            'details': result[1],
+        }
 
     else:
         response =

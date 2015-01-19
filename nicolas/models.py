@@ -8,10 +8,10 @@ class Robot(models.Model):
     yPos = models.IntegerField()
     xPosMetric = models.FloatField()
     yPosMetric = models.FloatField()
-    xTarget = models.IntegerField()
-    yTarget = models.IntegerField()
-    xTargetMetric = models.FloatField()
-    yTargetMetric = models.FloatField()
+    xTarget = models.IntegerField(null = True)
+    yTarget = models.IntegerField(null = True)
+    xTargetMetric = models.FloatField(null = True)
+    yTargetMetric = models.FloatField(null = True)
 
     def __unicode__(self):
         return "robotId: {robotId}; x: {xPos}; y: {yPos}; xTarget: {xTarget}; yTarget: {yTarget}"
