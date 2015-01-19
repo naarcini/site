@@ -17,7 +17,7 @@ def ClearRobot(robotId):
     Waypoint.objects.filter(robotId = robotId).delete()
 
     try:
-        Robot.objects.get(id = robotId).delete()
+        Robot.objects.get(pk = robotId).delete()
     except Robot.DoesNotExist:
         return('error', 'No robot of this id found')
     except Robot.MultipleObjectsReturned:
@@ -43,7 +43,7 @@ def ResetInstruction(robotId):
     Clear instruction for a particular robot
     """
     try:
-        robot = Robot.objects.get(id = robotId)
+        robot = Robot.objects.get(pk = robotId)
         robot.xTarget = None
         robot.yTarget = None
         robot.xTargetMetric = None
