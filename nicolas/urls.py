@@ -14,8 +14,10 @@ urlpatterns = patterns('nicolas.views',
 
     # Indoor Robotic Navigation System URLs
     url(r'^webapp/', 'webapp', name='webapp'),
-    url(r'^getInstruction/', 'getInstruction', name='getInstruction'),
-    url(r'^updateMap/', 'updateMap', name='updateMap'),
+    url(r'^instruction/', 'instruction', name='instruction'),
+    url(r'^robot/', 'robot', name='robot'),
+    url(r'^serverMap/', 'serverMap', name='serverMap'),
+    url(r'^masterReset/', 'masterReset', name='masterReset'),
 
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),

@@ -34,30 +34,33 @@ body
 
 /* Map Section */
 
-#map-controls
-{
-    display: inline-block;
-    float: left;
-    margin: 10px;
-}
-
-#map
+#map-viewport
 {
     width: 500px;
     height: 500px;
+    cursor: move;
+    overflow: hidden;
+    float: left;
+    display: inline-block;
+    margin 10px;
 }
 
-#map-zoom
+#map-layer1
 {
-    margin-left: 25px;
-    width: 400px;
+    width: 650px;
+    height: 650px;
 }
 
-#map-zoom-feeback
+#map-layer2
 {
-    margin-left: 5px;
-    width: 65px;
-    font-family: sans-serif;
+    width: 1300px;
+    height: 1300px;
+}
+
+#map-layer3
+{
+    width: 2600px;
+    height: 2600px;
 }
 
 /* Text section */

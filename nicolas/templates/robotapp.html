@@ -4,9 +4,13 @@
         <title>IRNS Control</title>
         <!--<link href="{{ STATIC_URL }}styles/robot.css" rel="stylesheet" type="text/css">
         <script type="text/javascript" charset="utf-8" src="{{ STATIC_URL }}scripts/jquery-1.11.0.min.js"></script>
+        <script type="text/javascript" charset="utf-8" src="{{ STATIC_URL }}scripts/jquery.mapbox.js"></script>
+        <script type="text/javascript" charset="utf-8" src="{{ STATIC_URL }}scripts/jquery.mousewheel.js"></script>
         <script type="text/javascript" charset="utf-8" src="{{ STATIC_URL }}scripts/robot.js"></script>-->
         <link href="../static/styles/robot.css" rel="stylesheet" type="text/css">
         <script type="text/javascript" charset="utf-8" src="../static/scripts/jquery-1.11.0.min.js"></script>
+        <script type="text/javascript" charset="utf-8" src="../static/scripts/jquery.mapbox.js"></script>
+        <script type="text/javascript" charset="utf-8" src="../static/scripts/jquery.mousewheel.js"></script>
         <script type="text/javascript" charset="utf-8" src="../static/scripts/robot.js"></script>
     </head>
     <body>
@@ -14,13 +18,34 @@
             <h1>Indoor Robotic Navigation System:<br /> Control Panel</h1>
         </div>
         <div id="control-panel">
-            <div id="map-controls">
-                <img id="map" alt="placeholder" src="../static/images/ShrugEmoticon.jpg" />
-                <br />
-                <input id="map-zoom" type="range" min="0" max="100" step="10" value="50" /> 
-                <span id="map-zoom-feedback" class="white-box">50 %</span>
+            <div id="map-viewport">
+                <div id="map-layer1" class="map-layer" style="background: url(../static/images/ShrugEmoticon.jpg) no-repeat;">
+                    <!-- Top level map content, if any, goes here-->
+                </div>
+
+                <div id="map-layer2" class="map-layer">
+                    <img alt="" src="../static/images/ShrugEmoticon.jpg" />
+                    <div class="mapcontent">
+                        <!--map content, if any, goes here-->
+                    </div>
+                </div>
+
+                <div id="map-layer3" class="map-layer">
+                    <img alt="" src="../static/images/ShrugEmoticon.jpg" />
+                    <div class="mapcontent">
+                        <!--map content, if any, goes here-->
+                    </div>
+                </div>
             </div>
             
+            <div class="interface white-box" id="legend">
+                <h2>Legend:</h2>
+                <ul>
+                    <li>some-image in legend</li>
+                    <li>some-image in legend</li>
+                </ul>
+            </div>
+            <br />
             <div class="interface white-box" id="coordinates">
                 <h2>Coordinates:</h2>
                 <ul>
@@ -38,14 +63,6 @@
                     <li><input type="submit" value="Push to Robot" /></li>
                 </ul>
                 </form>
-            </div>
-            <br />
-            <div class="interface white-box" id="legend">
-                <h2>Legend:</h2>
-                <ul>
-                    <li>some-image in legend</li>
-                    <li>some-image in legend</li>
-                </ul>
             </div>
         </div>
     </body>
