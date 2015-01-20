@@ -1,6 +1,7 @@
 from nicolas.shortcuts import template_response, json_response, html_response
 from nicolas.dataObjects import Coordinate, MetaData, RobotObject, CellState, Cell
 from nicolas.serverFunctions import ClearRobot, ResetMap, CheckMap, ResetInstruction, ResetDb, GetRobotId, JsonToRobot, JsonToCellArray, JsonToInstruction, UpdateRobot, UpdateMap, UpdateInstruction, DrawMap
+from nicolas.models import Robot, Map, Waypoint
 
 def index(request):
     response = {}
@@ -133,7 +134,19 @@ def serverMap(request):
     elif request.method == "GET":
         # Get specified map segments in JSON blob and update PNG file
         mapResult = DrawMap()
-        blob = request.read() 
+
+        if 'payload' not in request.GET:
+            response = \
+            {
+                'status': 'error',
+                'details': 'No data for a specific cell specified',
+                'drawStatus': mapResult[0],
+                'drawDetails': mapResult[1],
+            }
+            return json_response(response)
+
+ 
+        blob = str(request.GET['payload'])
         result = JsonToCellArray(blob)
 
         if result[0] == 'error':
@@ -150,7 +163,7 @@ def serverMap(request):
         responseCellArray = []
 
         for cell in requestCellArray:
-            if cell.ValidateCoordinate():
+            if cell.ValidateCoordinates():
                 mapData = Map.objects.get(x = cell.coordinate.x, y = cell.coordinate.y)
                 cell.state = mapData.state
                 responseCellArray.append(cell)
