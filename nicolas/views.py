@@ -41,7 +41,7 @@ def instruction(request):
     robotId = GetRobotId(request.GET)
 
     if robotId is None:
-        response =
+        response = \
         {
             'status': 'error',
             'details': 'all requests must have a robot ID',
@@ -60,7 +60,7 @@ def instruction(request):
         response = {}
 
     else:
-        response =
+        response = \
         {
             'status': 'error',
             'details': 'Must use GET or DELETE',
@@ -87,7 +87,7 @@ def robot(request):
         response = {}
 
     elif robotId is None:
-        response =
+        response = \
         {
             'status': 'error',
             'details': 'GET or DELETE requests must have a robot ID',
@@ -102,7 +102,7 @@ def robot(request):
         response = {}
 
     else:
-        response =
+        response = \
         {
             'status': 'error',
             'details': 'Must use GET or DELETE',
@@ -123,14 +123,21 @@ def serverMap(request):
     DELETE:
         Resets map
     """
-    if request.method == "GET":
+    if not CheckMap():
+        response = \
+        {
+            'status': 'error',
+            'details': 'Map has not been built yet',
+        }
+
+    elif request.method == "GET":
         # Get specified map segments in JSON blob and update PNG file
         mapResult = DrawMap()
-        blob = request.read()
+        blob = request.read() 
         result = JsonToCellArray(blob)
 
         if result[0] == 'error':
-            response =
+            response = \
             {
                 'status': result[0],
                 'details': result[1],
@@ -141,7 +148,6 @@ def serverMap(request):
 
         requestCellArray = result[2]
         responseCellArray = []
-        CheckMap()
 
         for cell in requestCellArray:
             if cell.ValidateCoordinate():
@@ -149,7 +155,7 @@ def serverMap(request):
                 cell.state = mapData.state
                 responseCellArray.append(cell)
 
-        response =
+        response = \
         {
             'status': 'ok',
             'details': [ cell.Dictify() for cell in responseCellArray ],
@@ -163,7 +169,7 @@ def serverMap(request):
         result = JsonToCellArray(blob)
 
         if result[0] == 'error':
-            response =
+            response = \
             {
                 'status': result[0],
                 'details': result[1],
@@ -171,7 +177,6 @@ def serverMap(request):
             return json_response(response)
 
         requestCellArray = result[2]
-        CheckMap()
 
         for cell in requestCellArray:
             if cell.ValidatePopulated():
@@ -179,7 +184,7 @@ def serverMap(request):
                 mapData.state = cell.state
                 mapData.save()
 
-        response =
+        response = \
         {
             'status': 'ok',
             'details': 'Successfully updated map',
@@ -188,14 +193,14 @@ def serverMap(request):
     elif request.method == "DELETE":
         # Reset map in DB
         result = ResetMap()
-        reponse =
+        reponse = \
         {
             'status': result[0],
             'details': result[1],
         }
 
     else:
-        response =
+        response = \
         {
             'status': 'error',
             'details': 'Must use GET, POST, or DELETE'
@@ -214,14 +219,14 @@ def masterReset(request):
     if request.method == "DELETE":
         # Delete everything
         result = ResetDb()
-        response =
+        response = \
         {
             'status': result[0],
             'details': result[1],
         }
 
     else:
-        response =
+        response = \
         {
             'status': 'error',
             'details': 'Must use DELETE. Are you sure you want to do this?',

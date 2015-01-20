@@ -24,11 +24,14 @@ class MetaData(object):
     """
     Stores metadata about project"
     """
+    xMax = 650
+    yMax = 650
+    units = "dm"
+    origin = Coordinate(325, 325)
+    init = False
+
     def __init__(self):
-        self.xMax = 650
-        self.yMax = 650
-        self.units = "dm"
-        self.origin = Coordinate(325, 325)
+        self.init = True
 
     def Dictify(self):
         return {'xMax': self.xMax, 'yMax': self.yMax, 'units': self.units, 'origin': self.origin.Dictify()}

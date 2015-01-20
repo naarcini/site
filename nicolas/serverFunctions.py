@@ -25,18 +25,30 @@ def ClearRobot(robotId):
 
     return('ok', 'Successfully deleted robot data')
 
-def ResetMap():
+def BuildMap():
     """
     Return full map to initial, unexplored state
+    This is SUPER SLOW
     """
     Map.objects.all().delete()
 
-    for i in range(-MetaData.orign.x, MetaData.xMax - MetaData.origin.x):
+    print "Starting to build map"
+
+    for i in range(-MetaData.origin.x, MetaData.xMax - MetaData.origin.x):
         for j in range(-MetaData.origin.y, MetaData.yMax - MetaData.origin.y):
             cell = Map(x = i, y = j, state = CellState.unexplored)
             cell.save()
 
+    print "Finished building map"
+
     return ('ok', 'Successfully regenerated map')
+
+def ResetMap():
+    """
+    Just reset explored state of existing map
+    """
+    Map.objects.all().update(state = CellState.unexplored)
+    return('ok', 'Sucessfully reset map exploration state')
 
 def ResetInstruction(robotId):
     """
@@ -49,21 +61,21 @@ def ResetInstruction(robotId):
         robot.xTargetMetric = None
         robot.yTargetMetric = None
         robot.save()
-     except Robot.DoesNotExist:
+    except Robot.DoesNotExist:
         return('error', 'No robot of this id found')
-     except Robot.MultipleObjectsReturned:
+    except Robot.MultipleObjectsReturned:
         return('error', 'Multiple robots of this id found')
 
     return ('ok', 'Successfully cleared instructions')
 
 def CheckMap():
     """
-    If map is not populated, populate it
+    If map is not populated, say so
     """
-    mapData = Map.objects.filter(x = 0, y = 0)
+    if Map.objects.all().count() < (MetaData.xMax * MetaData.yMax):
+        return False
 
-    if len(mapData) == 0:
-        ResetMap()
+    return True
 
 def ResetDb():
     """
@@ -74,7 +86,11 @@ def ResetDb():
     if status[0] == 'error':
         return status
 
-    status = ResetMap()
+    if CheckMap():
+        status = ResetMap()
+    else:
+        status = BuildMap()
+
     return status
 
 # Parse Input functinos
@@ -98,6 +114,9 @@ def JsonToCellArray(jsonBlob):
     """
     Convert a chunk of json to an array of Cell objects
     """
+    if jsonBlob is None:
+        return('error', 'No JSON detected in body')
+
     result = []
     rawData = json.loads(jsonBlob)
 
