@@ -14,9 +14,9 @@ urlpatterns = patterns('nicolas.views',
 
     # Indoor Robotic Navigation System URLs
     url(r'^webapp/', 'webapp', name='webapp'),
-    url(r'^instruction/', 'instruction', name='instruction'),
     url(r'^robot/', 'robot', name='robot'),
-    url(r'^serverMap/', 'serverMap', name='serverMap'),
+    url(r'^userInterface/', 'userInterface', name='userInterface'),
+    url(r'^visualMap/', 'visualMap', name='visualMap'),
     url(r'^masterReset/', 'masterReset', name='masterReset'),
 
     # Uncomment the admin/doc line below to enable admin documentation:

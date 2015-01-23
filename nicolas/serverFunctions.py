@@ -1,5 +1,6 @@
 from nicolas.dataObjects import Coordinate, MetaData, RobotObject, CellState, Cell
 from nicolas.models import Robot, Map, Waypoint
+from ast import literal_eval
 import json
 
 # Reset Functions
@@ -16,14 +17,37 @@ def ClearRobot(robotId):
 
     Waypoint.objects.filter(robotId = robotId).delete()
 
-    try:
-        Robot.objects.get(pk = robotId).delete()
-    except Robot.DoesNotExist:
-        return BuildJsonResponse(False, 'No robot of this id found')
-    except Robot.MultipleObjectsReturned:
-        return BuildJsonResponse(False, 'Multiple robots of this id found')
+    result = GetSpecificRobot(robotId)
+    if not IsOperationSuccess(result):
+        return result
 
+    result['robot'].delete()
     return BuildJsonResponse(True, 'Successfully deleted robot data')
+
+def ResetInstruction(robotId):
+    """
+    Clear instruction for a particular robot
+    """
+    result = GetSpecificRobot(robotId)
+    if not IsOperationSuccess(result):
+        return result
+
+    robot = result['robot']
+    robot.xTarget = None
+    robot.yTarget = None
+    robot.save()
+
+    return BuildJsonResponse(True, 'Successfully cleared instructions')
+
+def ResetWaypoints(robotId):
+    """
+    Clear waypoints for a particular robot
+    """
+    if robotId is None:
+        return BuildJsonResponse(False, 'Null robot ID')
+
+    Waypoint.objects.filter(robotId = robotId, realWaypoint = False).delete()
+    return BuildJsonResponse(True, 'Successfully deleted waypoints')
 
 def BuildMap():
     """
@@ -50,24 +74,6 @@ def ResetMap():
     Map.objects.all().update(state = CellState.unexplored)
     return BuildJsonResponse(True, 'Successfully reset map exploration state')
 
-def ResetInstruction(robotId):
-    """
-    Clear instruction for a particular robot
-    """
-    try:
-        robot = Robot.objects.get(pk = robotId)
-        robot.xTarget = None
-        robot.yTarget = None
-        robot.xTargetMetric = None
-        robot.yTargetMetric = None
-        robot.save()
-    except Robot.DoesNotExist:
-        return BuildJsonResponse(False, 'No robot of this id found')
-    except Robot.MultipleObjectsReturned:
-        return BuildJsonResponse(False, 'Multiple robots of this id found')
-
-    return BuildJsonResponse(True, 'Successfully cleared instructions')
-
 def CheckMap():
     """
     If map is not populated, say so
@@ -82,7 +88,6 @@ def ResetDb():
     Master Reset of DB
     """
     result = ClearRobot(None)
-
     if not IsOperationSuccess(result):
         return result
 
@@ -107,47 +112,77 @@ def GetRobotId(args):
 
     return None
 
-def JsonToRobot(jsonBlob):
+def TextToJson(text):
     """
-    Convert a chunk of json to RobotObject
+    Parse some text into json with error checking
     """
-    return BuildJsonResponse(False, 'Not Implemented')
+    if not text:
+        return BuildJsonResponse(False, 'No JSON detected')
 
-def JsonToCellArray(jsonBlob):
-    """
-    Convert a chunk of json to an array of Cell objects
-    """
-    if jsonBlob is None:
-        return BuildJsonResponse(False, 'No JSON detected in body')
-
-    result = []
     try:
-        rawData = json.loads(jsonBlob)
-    except:
-        return BuildJsonResponse(False, 'Bad JSON')
+        rawData = json.loads(text)
+    except Exception as ex:
+        return BuildJsonResponse(False, 'Bad JSON: {0}'.format(str(ex)))
 
-    if 'cells' not in rawData:
-        return BuildJsonResponse(False, 'Could not find map data in request')
-
-    for cell in rawData['cells']:
-        newCell = Cell() 
-        if 'x' in cell:
-            newCell.coordinate.x = int(cell['x'])
-        if 'y' in cell:
-            newCell.coordinate.y = int(cell['y'])
-        if 'state' in cell:
-            newCell.state = int(cell['state'])
-        result.append(newCell)
-
-    response = BuildJsonResponse(True, 'Successfully decoded json to cell array')
-    response['result'] = result
+    response = BuildJsonResponse(True, 'Successfully decoded JSON')
+    response['rawData'] = rawData
     return response
 
-def JsonToInstruction(jsonBlob):
+def ParseRobotRequest(robotId, body):
     """
-    Convert a chunk of json to an Instruction
+    Parse some JSON for robot updates
     """
-    return None
+    result = TextToJson(body)
+    if not IsOperationSuccess(result):
+        return result
+
+    rawData = result['rawData']
+    robotUpdates = {}
+
+    if 'cells' in rawData:
+        result = MapListToCellArray(rawData['cells'])
+        if not IsOperationSuccess(result):
+            return result
+
+        robotUpdates['cells'] = result['cells']
+
+    if 'robot' in rawData:
+        robot = RobotObject(robotId)
+        inRobot = rawData['robot']
+
+        if 'position' in inRobot:
+            result = MapListToCellArray(inRobot['position'])
+            if not IsOperationSuccess(result):
+                return result
+
+            position = result['cells'][0]
+            robot.position.x = position.coordinate.x
+            robot.position.y = position.coordinate.y
+
+        if 'exactPosition' in inRobot:
+            result = MapListToCellArray(inRobot['exactPosition'])
+            if not IsOperationSuccess(result):
+                return result
+
+            exactPosition = result['cells'][0]
+            robot.exactPosition.x = exactPosition.coordinate.x
+            robot.exactPosition.y = exactPosition.coordinate.y
+
+        if 'waypoints' in inRobot:
+            result = MapListToCellArray(inRobot['waypoints'])
+            if not IsOperationSuccess(result):
+                return result
+
+            robot.waypoints = [ cell.Dictify() for cell in result['cells'] ]
+
+        robotUpdates['robot'] = robot
+
+    if 'robot' not in robotUpdates and 'cells' not in robotUpdates:
+        return BuildJsonResponse(False, 'Unable to parse any input data')
+
+    response = BuildJsonResponse(True, 'Successfully parsed input data')
+    response['result'] = robotUpdates
+    return response
 
 def BuildJsonResponse(succeeded, message):
     """
@@ -173,34 +208,315 @@ def IsOperationSuccess(operationResponse):
     else:
         raise Exception('Status message not defined')
 
-# Update DB Functions
+# Mapping Functions
+
+def MapRobotDBToRobotObj(robotDB, waypoints):
+    """
+    Map a robot model object to a separate object for easier validation/printing
+    """
+    robot = RobotObject(robotDB.pk)
+
+    robot.position.x = robotDB.xPos
+    robot.position.y = robotDB.yPos
+    robot.exactPosition.x = robotDB.xExactPos
+    robot.exactPosition.y = robotDB.yExactPos
+    robot.instruction.x = robotDB.xTarget
+    robot.instruction.y = robotDB.yTarget
+
+    if waypoints is not None:
+        robot.waypoints = [ [point.x, point.y] for point in waypoints ]
+
+    return robot
+
+def MapListToCellArray(ary):
+    """
+    Map a list of numbers to an array of cells
+    """
+    if not isinstance(ary, list):
+        return BuildJsonResponse(False, 'Bad list of map cells')
+
+    cells = []
+    if not isinstance(ary[0], list):
+        newCell = Cell()
+        newCell.coordinate.x = int(ary[0])
+        newCell.coordinate.y = int(ary[1])
+        if len(ary) > 2:
+            newCell.state = int(ary[2])
+        cells.append(newCell)
+
+    else:
+        for cell in ary:
+            newCell = Cell()
+            newCell.coordinate.x = int(cell[0])
+            newCell.coordinate.y = int(cell[1])
+            if len(cell) > 2:
+                newCell.state = int(cell[2])
+            cells.append(newCell)
+
+    response = BuildJsonResponse(True, 'Successfully built cell array')
+    response['cells'] = cells
+    return response
+        
+
+# DB Functions
 # If desired, we can rip out some code from views and put it here instead
 
-def UpdateRobot(robotId, robot, waypoints):
+def GetSpecificRobot(robotId):
     """
-    Update specified robot in db
+    Gets a specific robot, checking if it exists
     """
-    return BuildJsonResponse(False, 'Not Implemented')
+    if robotId is None:
+        return BuildJsonResponse(False, 'Null robot ID')
 
-def UpdateMap(cellArray):
-    """
-    Update cells in map corresponding to input
-    """
-    return BuildJsonResponse(False, 'Not Implemented')
+    try:
+        robot = Robot.objects.get(pk = robotId)
+    except Robot.DoesNotExist:
+        return BuildJsonResponse(False, 'No robot of this id found')
+    except Robot.MultipleObjectsReturned:
+        return BuildJsonResponse(False, 'Multiple robots of this id found')
 
-def UpdateInstruction(robotId, coordinate):
-    """
-    Update the instruction for one robot
-    """
-    return BuildJsonResponse(False, 'Not Implemented')
+    response = BuildJsonResponse(True, 'Successfully found robot')
+    response['robot'] = robot
+    return response
 
-# Map Drawing Functions
-
-def DrawMap():
+def UpdateWaypoints(robotId, waypoints):
     """
-    Use DB to draw out map and robots to 3 PNG files of sizes
-    650x650, 1300x1300, and 2600x2600 (layer1, layer2, layer3)
+    Update specified robot's waypoints
     """
-    return BuildJsonResponse(False, 'Not Implemented')
+    if robotId is None:
+        return BuildJsonResponse(False, 'No robot ID detected')
 
- 
+    if not isinstance(waypoints, list):
+        return BuildJsonResponse(False, 'Waypoints must be formatted as a list')
+
+    for waypoint in waypoints:
+        if not isinstance(waypoint, list) or not len(waypoint) == 2:
+            return BuildJsonResponse(False, 'Waypoints must be formatted as [xPos, yPos]')
+
+    Waypoint.objects.filter(robotId = robotId, realWaypoint = False).delete()
+    result = GetSpecificRobot(robotId)
+    if not IsOperationSuccess(result):
+        return result
+
+    for waypoint in waypoints:
+        newWaypoint = Waypoint(robotId = result['robot'], realWaypoint = False, x = int(waypoint[0]), y = int(waypoint[1]))
+        newWaypoint.save()
+    
+    return BuildJsonResponse(True, 'Saved waypoints successfully')
+
+# Robot Endpoint
+
+def RobotAction(params, body, method):
+    """
+    Performs actions required by robot
+    """
+    robotId = GetRobotId(params)
+
+    if method == "POST":
+        # Parse input
+        result = ParseRobotRequest(robotId, body)
+        if not IsOperationSuccess(result):
+            return result
+
+        robotRequest = result['result']
+
+        # Update cells in map if specified
+        if 'cells' in robotRequest:
+            if not CheckMap():
+                return BuildJsonResponse(False, 'Map has not been built yet')
+
+            for cell in robotRequest['cells']:
+                if cell.ValidatePopulated():
+                    mapData = Map.objects.get(x = cell.coordinate.x, y = cell.coordinate.y)
+                    mapData.state = cell.state
+                    mapData.save()
+
+        # Create or update robot data in DB if specified
+        if 'robot' in robotRequest:
+            robotUpdates = robotRequest['robot']
+            if robotId is not None:
+                result = GetSpecificRobot(robotId)
+                if not IsOperationSuccess(result):
+                    return result
+
+                robotDB = result['robot']
+                if robotUpdates.PositionExists():
+                    robotDB.xPos = robotUpdates.position.x
+                    robotDB.yPos = robotUpdates.position.y
+                if robotUpdates.ExactPositionExists():
+                    robotDB.xExactPos = robotUpdates.exactPosition.x
+                    robotDB.yExactPos = robotUpdates.exactPosition.y
+                    newWaypoint = Waypoint(robotId = robotDB, realWaypoint = True, x = robotUpdates.exactPosition.x, y = robotUpdates.exactPosition.y)
+                    newWaypoint.save()
+                robotDB.save()
+
+            elif not robotUpdates.PositionExists() or not robotUpdates.ExactPositionExists():
+                    return BuildJsonResponse(False, 'On creation, a robot must have an estimated position and exact position')
+            else:
+                robotDB = Robot(xPos = robotUpdates.position.x,
+                                yPos = robotUpdates.position.y,
+                                xExactPos = robotUpdates.exactPosition.x,
+                                yExactPos = robotUpdates.exactPosition.y)
+                robotDB.save()
+                newWaypoint = Waypoint(robotId = robotDB, realWaypoint = True, x = robotUpdates.exactPosition.x, y = robotUpdates.exactPosition.y)
+                newWaypoint.save()
+                
+            robotId = robotDB.pk
+
+            if robotUpdates.WaypointsExist():
+                result = UpdateWaypoints(robotId, robotUpdates.waypoints)
+                if not IsOperationSuccess(result):
+                    result['robotId'] = robotId
+                    return result
+
+        # Create a response message
+        response = BuildJsonResponse(True, 'Successfully updated database')
+        if 'robot' in robotRequest:
+            response['robotId'] = robotId
+
+    elif robotId is None:
+        response = BuildJsonResponse(False, 'GET or DELETE requests must have a robot ID')
+
+    elif method == "GET":
+        # Access robot from DB
+        result = GetSpecificRobot(robotId)
+        if not IsOperationSuccess(result):
+            return result
+
+        waypoints = Waypoint.objects.filter(robotId = robotId, realWaypoint = False)
+        robot = MapRobotDBToRobotObj(result['robot'], waypoints)
+        response = BuildJsonResponse(True, 'Successfully got robot data')
+        response['robot'] = robot.Dictify()
+
+    elif method == "DELETE":
+        # Wipe all robot related data
+        response = ClearRobot(robotId)
+
+    else:
+        response = BuildJsonResponse(False, 'Must use GET, POST, or DELETE')
+
+    return response
+
+# User Interface Endpoint
+
+def UserInterfaceAction(params, body, method):
+    """
+    Performs actions required by user interface
+    """
+    if method == "GET":
+        # Get the list of robots
+        robotIds = list(Robot.objects.values_list('id', flat=True).order_by('id'))
+        cells = None
+        realWaypoints = None
+
+        # Check for cells to get
+        if 'cells' in params:
+            if not CheckMap():
+                return BuildJsonResponse(False, 'Map has not been built yet')
+
+            result = TextToJson(params['cells'])
+            if not IsOperationSuccess(result):
+                return result
+
+            result = MapListToCellArray(result['rawData'])
+            if not IsOperationSuccess(result):
+                return result
+
+            cells = result['cells']
+            for cell in cells:
+                if cell.ValidateCoordinates():
+                    mapData = Map.objects.get(x = cell.coordinate.x, y = cell.coordinate.y)
+                    cell.state = mapData.state
+
+        robotId = GetRobotId(params)
+        if robotId is not None:
+            realWaypoints = Waypoint.objects.filter(robotId = robotId, realWaypoint = True)
+
+        response = BuildJsonResponse(True, 'Successfully acquired data')
+        response['robots'] = robotIds
+        if cells is not None:
+            response['cells'] = [ cell.Dictify() for cell in cells]
+        if realWaypoints is not None and len(realWaypoints) > 0:
+            response['realWaypoints'] = [ [waypoint.x, waypoint.y] for waypoint in realWaypoints ]
+
+    elif method == "POST":
+        # Update Instruction for one robot
+        if not body:
+            return BuildJsonResponse(False, 'Must include a request body in a POST')
+
+        robotId = GetRobotId(params)
+        if robotId is None:
+            return BuildJsonResponse(False, 'Must specify a robot ID')
+
+        result = TextToJson(body)
+        if not IsOperationSuccess(result):
+            return result
+
+        rawData = result['rawData']
+        if 'instruction' not in rawData:
+            return BuildJsonResponse(False, 'Must include instruction in update')
+
+        result = MapListToCellArray(rawData['instruction'])
+        if not IsOperationSuccess(result):
+            return result
+
+        instruction = result['cells'][0]
+        if not instruction.ValidateCoordinates():
+            return BuildJsonResponse(False, 'Invalid instruction coordinates')
+
+        result = GetSpecificRobot(robotId)
+        if not IsOperationSuccess(result):
+            return result
+
+        robot = result['robot']
+        robot.xTarget = instruction.coordinate.x
+        robot.yTarget = instruction.coordinate.y
+        robot.save()
+
+        response = BuildJsonResponse(True, 'Successfully updated instruction')
+
+    elif method == "DELETE":
+        # Find action to perform
+        result = TextToJson(body)
+        if not IsOperationSuccess(result):
+            return result
+
+        rawData = result['rawData']
+        if 'data' not in rawData:
+            return BuildJsonResponse(False, 'Must specify what sort of thing to delete')
+
+        robotId = GetRobotId(params)
+        if rawData['data'] == 'map':
+            response = ResetMap()
+        elif rawData['data'] == 'waypoints':
+            response = ResetWaypoints(robotId)
+        elif rawData['data'] == 'instruction':
+            response = ResetInstruction(robotId)
+        elif rawData['data'] == 'robot':
+            if robotId is None:
+                response = BuildJsonResponse(False, 'No robot ID included')
+            else:
+                response = ClearRobot(robotId)
+        else:
+            response = BuildJsonResponse(False, 'Must specify map, waypoints, instruction, or robot')
+
+    else:
+        response = BuildJsonResponse(False, 'Must use GET, POST, or DELETE')
+
+    return response
+
+# Master Reset Endpoint
+
+def MasterResetAction(params, body, method):
+    """
+    Performs actions required by master reset
+    """
+    if method == "DELETE":
+        # Delete everything
+        response = ResetDb()
+
+    else:
+        response = BuildJsonResponse(False, 'Must use DELETE. Are you sure you want to do this?')
+
+    return response
+

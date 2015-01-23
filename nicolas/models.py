@@ -6,16 +6,14 @@ class Robot(models.Model):
     """
     xPos = models.IntegerField()
     yPos = models.IntegerField()
-    xPosMetric = models.FloatField()
-    yPosMetric = models.FloatField()
+    xExactPos = models.IntegerField()
+    yExactPos = models.IntegerField()
     xTarget = models.IntegerField(null = True)
     yTarget = models.IntegerField(null = True)
-    xTargetMetric = models.FloatField(null = True)
-    yTargetMetric = models.FloatField(null = True)
 
     def __unicode__(self):
-        return "robotId: {robotId}; x: {xPos}; y: {yPos}; xTarget: {xTarget}; yTarget: {yTarget}" \
-                .format(robotId = self.id, xPos = self.xPos, yPos = self.yPos, xTarget = self.xTarget, yTarget = self.yTarget)
+        return "robotId: {robotId}; x: {xPos}; y: {yPos}; xExact: {xExactPos}; yExact: {yExactPos}; xTarget: {xTarget}; yTarget: {yTarget}" \
+                .format(robotId = self.pk, xPos = self.xPos, yPos = self.yPos, xExactPos = self.xExactPos, yExactPos = self.yExactPos, xTarget = self.xTarget, yTarget = self.yTarget)
 
 class Map(models.Model):
     """
@@ -34,6 +32,7 @@ class Waypoint(models.Model):
     Stores the array of waypoints associated with a robot
     """
     robotId = models.ForeignKey(Robot)
+    realWaypoint = models.BooleanField()
     x = models.IntegerField()
     y = models.IntegerField()
 
