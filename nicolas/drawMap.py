@@ -2,7 +2,6 @@ from nicolas.serverFunctions import BuildJsonResponse, IsOperationSuccess, GetRo
 from nicolas.dataObjects import MetaData, CellState
 from nicolas.models import Map, Waypoint
 import array
-import math
 import png
 import time
 
@@ -95,7 +94,7 @@ def VisualMapAction(params, body, method):
 
     idx = 0
     px = 0
-    firstStart = time.clock()
+    start = time.clock()
     mapDB = array.array('B', Map.objects.order_by('-y', 'x').values_list('state', flat=True))
     for yPos in range(0, MetaData.yMax):
         for xPos in range(0, MetaData.xMax):
@@ -159,10 +158,14 @@ def VisualMapAction(params, body, method):
     w = png.Writer(MetaData.xMax, MetaData.yMax)
     w.write_array(f, image)
     f.close()
-    firstEnd = time.clock()
+    end = time.clock()
+
+    print 'layer 1: ' + str(end - start)
+    mathTime = 0
+    transposeTime = 0
 
     # Create upscaled copies of original map
-    secondStart = time.clock()
+    start = time.clock()
     width = MetaData.xMax
     height = MetaData.yMax
     pixels = width * height
@@ -182,13 +185,21 @@ def VisualMapAction(params, body, method):
 
         # Perform copy
         for i in range(0, oldPixels):
+            start2 = time.clock()
             rowNum = int(i / oldWidth)
             colNum = i % oldWidth
+            oldPos = i * CHANNELS
             pos = SCALE_FACTOR * ((rowNum * width) + colNum)
+            end2 = time.clock()
+            mathTime += (end2 - start2)
+
+            start2 = time.clock()
             for xPos in range(0, SCALE_FACTOR):
                 for yPos in range(0, SCALE_FACTOR):
                     for channel in range(0, CHANNELS):
-                        image[CHANNELS * (pos + xPos + (yPos * width)) + channel] = oldImage[(i * CHANNELS) + channel]
+                        image[CHANNELS * (pos + xPos + (yPos * width)) + channel] = oldImage[oldPos + channel]
+            end2 = time.clock()
+            transposeTime += (end2 - start2)
 
         # Draw new map
         f = open(FILE_PATH.format(layerNum = layerNum), 'wb')
@@ -196,11 +207,12 @@ def VisualMapAction(params, body, method):
         w.write_array(f, image)
         f.close()
 
+        end = time.clock()
+        print 'layer 2: ' + str(end - start)
+        print '   math: ' + str(mathTime)
+        print '  trans: ' + str(transposeTime)
+
         # Increment variables
         layerNum += 1
-    secondEnd = time.clock()
-
-    print 'First part: ' + str(firstEnd - firstStart)
-    print 'Second part: ' + str(secondEnd - secondStart)
 
     return BuildJsonResponse(True, 'Successfully created images')
