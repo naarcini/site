@@ -1,6 +1,7 @@
 from nicolas.shortcuts import template_response, json_response, html_response
 from nicolas.serverFunctions import RobotAction, UserInterfaceAction, MasterResetAction, BuildJsonResponse
 from nicolas.drawMap import VisualMapAction
+import uuid
 
 def index(request):
     response = {}
@@ -78,7 +79,9 @@ def visualMap(request):
         Build and save map
     """
     try:
-        response = VisualMapAction(request.GET, request.read(), request.method)
+        if 'userId' not in request.session:
+            request.session['userId'] = str(uuid.uuid1())
+        response = VisualMapAction(request.GET, request.read(), request.method, request.session['userId'])
     except Exception as ex:
         print 'Error: {0}'.format(str(ex))
         response = BuildJsonResponse(False, 'An unexpected server error occurred: {0}'.format(str(ex)))

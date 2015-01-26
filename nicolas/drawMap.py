@@ -1,9 +1,10 @@
 from nicolas.serverFunctions import BuildJsonResponse, IsOperationSuccess, GetRobotId, GetSpecificRobot, MapRobotDBToRobotObj
 from nicolas.dataObjects import MetaData, CellState
 from nicolas.models import Map, Waypoint
+from PIL import Image
 import array
-import png
-import time
+import os
+import re
 
 # Map colours
 UNEXPLORED_RGB = (0x88,0x88,0x88)
@@ -21,7 +22,8 @@ WAYPOINT_REAL_RGB = (0x00,0xcc,0x00)
 NUM_LAYERS = 4
 SCALE_FACTOR = int(2)
 CHANNELS = 3
-FILE_PATH = 'nicolas/static/images/layer{layerNum}.png'
+FILE_PATH = 'nicolas/static/images/layer{layerNum}_{userId}.png'
+FILE_BASE = 'nicolas/static/images/'
 
 def ConvertCoordinates(x, y):
     """
@@ -84,17 +86,16 @@ def Square(x, y):
 
     return coordinates
 
-def VisualMapAction(params, body, method):
+def DrawMap(params, userId):
     """
-    Use DB to draw out map and robots to 3 PNG files of sizes
-    650x650, 1300x1300, and 2600x2600 (layer1, layer2, layer3)
+    Use DB to draw out map and robots to 4 PNG files of sizes
+    650x650, 1300x1300, 2600x2600, and 5200x5200 (layer1, layer2, layer3, layer4)
     """
     # Create the map array for the base case
     image = array.array('B', [0x00 for i in range(0, CHANNELS * MetaData.yMax * MetaData.xMax)])
 
     idx = 0
     px = 0
-    start = time.clock()
     mapDB = array.array('B', Map.objects.order_by('-y', 'x').values_list('state', flat=True))
     for yPos in range(0, MetaData.yMax):
         for xPos in range(0, MetaData.xMax):
@@ -154,65 +155,47 @@ def VisualMapAction(params, body, method):
                 image[coord + i] = ROBOT_EXACT_RGB[i]
 
     # Draw the map and save as layer1.png
-    f = open(FILE_PATH.format(layerNum = 1), 'wb')
-    w = png.Writer(MetaData.xMax, MetaData.yMax)
-    w.write_array(f, image)
-    f.close()
-    end = time.clock()
-
-    print 'layer 1: ' + str(end - start)
-    mathTime = 0
-    transposeTime = 0
+    im = Image.frombuffer('RGB', (MetaData.xMax, MetaData.yMax), image, 'raw', 'RGB', 0, 1)
+    im.save(FILE_PATH.format(layerNum = 1, userId = userId))
 
     # Create upscaled copies of original map
-    start = time.clock()
     width = MetaData.xMax
     height = MetaData.yMax
-    pixels = width * height
     layerNum = 2
-    scaleMatrix = array.array('B', [0x00 for i in range(0, SCALE_FACTOR * SCALE_FACTOR) ])
     while layerNum <= NUM_LAYERS:
-        # Preserve previoius data
-        oldImage = image
-        oldPixels = pixels
-        oldWidth = width
-
-        # Initialize new values
         width *= SCALE_FACTOR
         height *= SCALE_FACTOR
-        pixels = width * height
-        image = array.array('B', [0x00 for i in range(0, CHANNELS * pixels)])
 
-        # Perform copy
-        for i in range(0, oldPixels):
-            start2 = time.clock()
-            rowNum = int(i / oldWidth)
-            colNum = i % oldWidth
-            oldPos = i * CHANNELS
-            pos = SCALE_FACTOR * ((rowNum * width) + colNum)
-            end2 = time.clock()
-            mathTime += (end2 - start2)
+        out = im.resize((width, height))
+        out.save(FILE_PATH.format(layerNum = layerNum, userId = userId))
 
-            start2 = time.clock()
-            for xPos in range(0, SCALE_FACTOR):
-                for yPos in range(0, SCALE_FACTOR):
-                    for channel in range(0, CHANNELS):
-                        image[CHANNELS * (pos + xPos + (yPos * width)) + channel] = oldImage[oldPos + channel]
-            end2 = time.clock()
-            transposeTime += (end2 - start2)
-
-        # Draw new map
-        f = open(FILE_PATH.format(layerNum = layerNum), 'wb')
-        w = png.Writer(width, height)
-        w.write_array(f, image)
-        f.close()
-
-        end = time.clock()
-        print 'layer 2: ' + str(end - start)
-        print '   math: ' + str(mathTime)
-        print '  trans: ' + str(transposeTime)
-
-        # Increment variables
         layerNum += 1
 
-    return BuildJsonResponse(True, 'Successfully created images')
+    response = BuildJsonResponse(True, 'Successfully created images')
+    response['userId'] = userId
+    return response
+
+def DeleteMaps():
+    """
+    Deletes all existing maps if we want to clear some space on the server
+    """
+    for f in os.listdir(FILE_BASE):
+        if re.match('^layer.+\.png$', f):
+            os.remove(os.path.join(FILE_BASE, f))
+
+    return BuildJsonResponse(True, 'Successfully deleted images')
+
+def VisualMapAction(params, body, method, userId):
+    """
+    Use DB to draw out map and robots to 4 PNG files of sizes
+    650x650, 1300x1300, 2600x2600, and 5200x5200 (layer1, layer2, layer3, layer4)
+    """
+    if method == 'GET':
+        return DrawMap(params, userId)
+
+    elif method == 'DELETE':
+        return DeleteMaps()
+
+    else:
+        return BuildJsonResponse(False, 'Must specify GET or DELETE')
+        
