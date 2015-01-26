@@ -63,6 +63,12 @@ body
     height: 2600px;
 }
 
+#map-layer4
+{
+    width: 5200px;
+    height: 5200px;
+}
+
 /* Text section */
 
 .interface
