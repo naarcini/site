@@ -9,12 +9,16 @@ h1
 
 body
 {
-    background: #65A954;
+    background: #000000;
+}
+
+a
+{
+    color: #66B3FF;
 }
 
 .white-box
 {
-    background: #FFF;
     border: 4px solid #FFF;
     border-radius: 4px;
 }
@@ -22,7 +26,8 @@ body
 #title-container
 {
     width: 100%;
-    height: 85px;
+    height: 40px;
+    color: #FFF;
 }
 
 #control-panel
@@ -36,13 +41,14 @@ body
 
 #map-viewport
 {
-    width: 500px;
-    height: 500px;
+    width: 650px;
+    height: 650px;
     cursor: move;
     overflow: hidden;
-    float: left;
+    float: none;
     display: inline-block;
     margin 10px;
+    color: #FFF;
 }
 
 #map-layer1
@@ -71,13 +77,19 @@ body
 
 /* Text section */
 
+#controls
+{
+    float: left;
+    display: inline-block;
+    margin: 5px 10px 5px 20px;
+}
+
 .interface
 {
-    display: inline-block;
+    background: #FFF;
     margin: 5px;
-    margin-left: 20px;
     font-family: sans-serif;
-    width: 400px;
+    width: 350px;
 }
 
 .interface h2
@@ -96,4 +108,9 @@ body
 {
     text-decoration: underline;
     font-weight: normal;
+}
+
+#legend
+{
+    display: none;
 }

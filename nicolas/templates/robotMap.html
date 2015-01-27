@@ -1,0 +1,32 @@
+{% if userId %}
+
+<div id="map-layer1" class="map-layer" style="background: url({{ STATIC_URL }}images/layer1_{{ userId }}.png) no-repeat;">
+    <!-- Top level map content, if any, goes here-->
+</div>
+
+<div id="map-layer2" class="map-layer">
+    <img alt="" src="{{ STATIC_URL }}images/layer2_{{ userId }}.png" />
+    <div class="mapcontent">
+        <!--map content, if any, goes here-->
+    </div>
+</div>
+
+<div id="map-layer3" class="map-layer">
+    <img alt="" src="{{ STATIC_URL }}images/layer3_{{ userId }}.png" />
+    <div class="mapcontent">
+        <!--map content, if any, goes here-->
+    </div>
+</div>
+
+<div id="map-layer4" class="map-layer">
+    <img alt="" src="{{ STATIC_URL }}images/layer4_{{ userId }}.png" />
+    <div class="mapcontent">
+        <!--map content, if any, goes here-->
+    </div>
+</div>
+
+{% else %}
+
+There was some error in getting maps...
+
+{% endif %}

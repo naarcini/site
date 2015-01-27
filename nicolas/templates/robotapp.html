@@ -2,74 +2,64 @@
 <html>
     <head>
         <title>IRNS Control</title>
-        <!--<link href="{{ STATIC_URL }}styles/robot.css" rel="stylesheet" type="text/css">
+        <link href="{{ STATIC_URL }}styles/robot.css" rel="stylesheet" type="text/css">
         <script type="text/javascript" charset="utf-8" src="{{ STATIC_URL }}scripts/jquery-1.11.0.min.js"></script>
         <script type="text/javascript" charset="utf-8" src="{{ STATIC_URL }}scripts/jquery.mapbox.js"></script>
         <script type="text/javascript" charset="utf-8" src="{{ STATIC_URL }}scripts/jquery.mousewheel.js"></script>
-        <script type="text/javascript" charset="utf-8" src="{{ STATIC_URL }}scripts/robot.js"></script>-->
-        <link href="../static/styles/robot.css" rel="stylesheet" type="text/css">
-        <script type="text/javascript" charset="utf-8" src="../static/scripts/jquery-1.11.0.min.js"></script>
-        <script type="text/javascript" charset="utf-8" src="../static/scripts/jquery.mapbox.js"></script>
-        <script type="text/javascript" charset="utf-8" src="../static/scripts/jquery.mousewheel.js"></script>
-        <script type="text/javascript" charset="utf-8" src="../static/scripts/robot.js"></script>
+        <script type="text/javascript" charset="utf-8" src="{{ STATIC_URL }}scripts/robot.js"></script>
     </head>
     <body>
         <div id="title-container" class="white-box">
-            <h1>Indoor Robotic Navigation System:<br /> Control Panel</h1>
+            <h1>Indoor Robotic Navigation System</h1>
         </div>
         <div id="control-panel">
+            <div id="controls">
+                <select id="robot-selector">
+                    <option selected value="">Select a robot</option>
+                </select>
+                <br /> 
+                <div class="interface white-box" id="coordinates">
+                    <h2>Coordinates:</h2>
+                    <ul>
+                        <li>Estimated X: <span class="coordinate xPos">NONE</span></li>
+                        <li>Estimated Y: <span class="coordinate yPos">NONE</span></li>
+                        <li>Last Known X: <span class="coordinate xExactPos">NONE</span></li>
+                        <li>Last Known Y: <span class="coordinate yExactPos">NONE</span></li>
+                    </ul>
+                    <input type="button" id="coordinates-clear" value="Clear Real Waypoints" />
+                    <input type="button" id="coordinates-refresh" value="Refresh" />
+                </div>
+                <br />
+                <div class="interface white-box" id="target">
+                    <h2>Target:</h2>
+                    <ul>
+                        <li>X: <input type="text" class="coordinate xPos" placeholder="Target x coordinate" /></li>
+                        <li>Y: <input type="text" class="coordinate yPos" placeholder="Target y coordinate" /></li>
+                    </ul>
+                    <br />
+                    <input type="button" id="target-update" value="Update" />
+                    <input type="button" id="target-clear" value="Clear" />
+                </div>
+                <br />
+                <a href="#" id="show-legend">[+] Show Legend</a>
+                <br />
+                <div class="interface white-box" id="legend">
+                    <h2>Legend:</h2>
+                    <ul>
+                        <li><img alt="unexplored" src="{{ STATIC_URL }}images/legend/unexplored.png"> - An unexplored location</li>
+                        <li><img alt="empty" src="{{ STATIC_URL }}images/legend/empty.png"> - An empty location</li>
+                        <li><img alt="blocked" src="{{ STATIC_URL }}images/legend/blocked.png"> - A blocked location</li>
+                        <li><img alt="target" src="{{ STATIC_URL }}images/legend/target.png"> - The target position</li>
+                        <li><img alt="exactPosition" src="{{ STATIC_URL }}images/legend/exactPosition.png"> - Last known position found using IPS</li>
+                        <li><img alt="position" src="{{ STATIC_URL }}images/legend/position.png"> - Estimated current position</li>
+                        <li><img alt="waypoint" src="{{ STATIC_URL }}images/legend/waypoint.png"> - Planned path</li>
+                        <li><img alt="realWaypoint" src="{{ STATIC_URL }}images/legend/realWaypoint.png"> - Actual path taken according to IPS</li>
+                    </ul>
+                </div>
+            </div>
+
             <div id="map-viewport">
-                <div id="map-layer1" class="map-layer" style="background: url(../static/images/layer1.png) no-repeat;">
-                    <!-- Top level map content, if any, goes here-->
-                </div>
-
-                <div id="map-layer2" class="map-layer">
-                    <img alt="" src="../static/images/layer2.png" />
-                    <div class="mapcontent">
-                        <!--map content, if any, goes here-->
-                    </div>
-                </div>
-
-                <div id="map-layer3" class="map-layer">
-                    <img alt="" src="../static/images/layer3.png" />
-                    <div class="mapcontent">
-                        <!--map content, if any, goes here-->
-                    </div>
-                </div>
-
-                <div id="map-layer4" class="map-layer">
-                    <img alt="" src="../static/images/layer4.png" />
-                    <div class="mapcontent">
-                        <!--map content, if any, goes here-->
-                    </div>
-                </div>
-            </div>
-            
-            <div class="interface white-box" id="legend">
-                <h2>Legend:</h2>
-                <ul>
-                    <li>some-image in legend</li>
-                    <li>some-image in legend</li>
-                </ul>
-            </div>
-            <br />
-            <div class="interface white-box" id="coordinates">
-                <h2>Coordinates:</h2>
-                <ul>
-                    <li>X: <span class="coordinate xPos">1234</span> cm</li>
-                    <li>Y: <span class="coordinate yPos">1234</span> cm</li>
-                </ul>
-            </div>
-            <br />
-            <div class="interface white-box" id="target">
-                <h2>Target:</h2>
-                <form action="" method="POST">
-                <ul>
-                    <li><label for="x-target">X</label>: <input type="text" name="x-target" class="coordinate x-pos" value="1234" /> cm</li>
-                    <li><label for="y-target">Y</label>: <input type="text" name="y-target" class="coordinate y-pos" value="1234" /> cm</li>
-                    <li><input type="submit" value="Push to Robot" /></li>
-                </ul>
-                </form>
+                Please select a robot
             </div>
         </div>
     </body>

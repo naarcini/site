@@ -39,14 +39,14 @@ def ResetInstruction(robotId):
 
     return BuildJsonResponse(True, 'Successfully cleared instructions')
 
-def ResetWaypoints(robotId):
+def ResetWaypoints(robotId, isReal):
     """
     Clear waypoints for a particular robot
     """
     if robotId is None:
         return BuildJsonResponse(False, 'Null robot ID')
 
-    Waypoint.objects.filter(robotId = robotId, realWaypoint = False).delete()
+    Waypoint.objects.filter(robotId = robotId, realWaypoint = isReal).delete()
     return BuildJsonResponse(True, 'Successfully deleted waypoints')
 
 def BuildMap():
@@ -489,7 +489,9 @@ def UserInterfaceAction(params, body, method):
         if rawData['data'] == 'map':
             response = ResetMap()
         elif rawData['data'] == 'waypoints':
-            response = ResetWaypoints(robotId)
+            response = ResetWaypoints(robotId, False)
+        elif rawData['data'] == 'realWaypoints':
+            response = ResetWaypoints(robotId, True)
         elif rawData['data'] == 'instruction':
             response = ResetInstruction(robotId)
         elif rawData['data'] == 'robot':
