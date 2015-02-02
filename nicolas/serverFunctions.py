@@ -139,7 +139,7 @@ def ParseRobotRequest(robotId, body):
     rawData = result['rawData']
     robotUpdates = {}
 
-    if 'cells' in rawData:
+    if 'cells' in rawData and len(rawData['cells']) > 0:
         result = MapListToCellArray(rawData['cells'])
         if not IsOperationSuccess(result):
             return result
@@ -150,7 +150,7 @@ def ParseRobotRequest(robotId, body):
         robot = RobotObject(robotId)
         inRobot = rawData['robot']
 
-        if 'position' in inRobot:
+        if 'position' in inRobot and len(inRobot['position']) > 0:
             result = MapListToCellArray(inRobot['position'])
             if not IsOperationSuccess(result):
                 return result
@@ -159,7 +159,7 @@ def ParseRobotRequest(robotId, body):
             robot.position.x = position.coordinate.x
             robot.position.y = position.coordinate.y
 
-        if 'exactPosition' in inRobot:
+        if 'exactPosition' in inRobot and len(inRobot['exactPosition']) > 0:
             result = MapListToCellArray(inRobot['exactPosition'])
             if not IsOperationSuccess(result):
                 return result
@@ -168,7 +168,7 @@ def ParseRobotRequest(robotId, body):
             robot.exactPosition.x = exactPosition.coordinate.x
             robot.exactPosition.y = exactPosition.coordinate.y
 
-        if 'waypoints' in inRobot:
+        if 'waypoints' in inRobot and len(inRobot['waypoints']) > 0:
             result = MapListToCellArray(inRobot['waypoints'])
             if not IsOperationSuccess(result):
                 return result
@@ -208,7 +208,7 @@ def IsOperationSuccess(operationResponse):
     else:
         raise Exception('Status message not defined')
 
-# Mapping Functions
+# Utility Functions
 
 def MapRobotDBToRobotObj(robotDB, waypoints):
     """
@@ -256,7 +256,6 @@ def MapListToCellArray(ary):
     response = BuildJsonResponse(True, 'Successfully built cell array')
     response['cells'] = cells
     return response
-        
 
 # DB Functions
 # If desired, we can rip out some code from views and put it here instead

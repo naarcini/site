@@ -16,6 +16,11 @@
             <div id="controls">
                 <select id="robot-selector">
                     <option selected value="">Select a robot</option>
+                    {% if robotIds %}
+                    {% for robotId in robotIds %}
+                    <option value="{{ robotId }}">Robot {{ robotId }}</option>
+                    {% endfor %}
+                    {% endif %}
                 </select>
                 <br /> 
                 <div class="interface white-box" id="coordinates">
@@ -33,8 +38,8 @@
                 <div class="interface white-box" id="target">
                     <h2>Target:</h2>
                     <ul>
-                        <li>X: <input type="text" class="coordinate xPos" placeholder="Target x coordinate" /></li>
-                        <li>Y: <input type="text" class="coordinate yPos" placeholder="Target y coordinate" /></li>
+                        <li>X: <input type="number" class="coordinate xPos" placeholder="Target x coordinate" /></li>
+                        <li>Y: <input type="number" class="coordinate yPos" placeholder="Target y coordinate" /></li>
                     </ul>
                     <br />
                     <input type="button" id="target-update" value="Update" />

@@ -120,6 +120,7 @@ def DrawMap(params, userId):
             return result
 
         waypoints = Waypoint.objects.filter(robotId = robotId, realWaypoint = False)
+        realWaypoints = Waypoint.objects.filter(robotId = robotId, realWaypoint = True)
         robot = MapRobotDBToRobotObj(result['robot'], waypoints)
 
         # Waypoints and connecting dots, if any
@@ -130,10 +131,15 @@ def DrawMap(params, userId):
                     for i in range(0, CHANNELS):
                         image[coord + i] = WAYPOINT_RGB[i]
 
-            # TODO: Now that the waypoints are drawn, connect the dots
+            # TODO: Now that the waypoints are drawn, connect the dots (maybe)
 
-
-        # TODO: Real waypoints
+        # Real waypoints
+        if len(realWaypoints) > 0:
+            for realWaypoint in realWaypoints:
+                shape = Square(int(realWaypoint.x), int(realWaypoint.y))
+                for coord in shape:
+                    for i in range(0, CHANNELS):
+                        image[coord + i] = WAYPOINT_REAL_RGB[i]
 
         # Robot target, if any
         if robot.InstructionExists():

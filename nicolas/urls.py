@@ -17,6 +17,7 @@ urlpatterns = patterns('nicolas.views',
     url(r'^robot/', 'robot', name='robot'),
     url(r'^userInterface/', 'userInterface', name='userInterface'),
     url(r'^visualMap/', 'visualMap', name='visualMap'),
+    url(r'^visualMapImages/', 'visualMapImages', name='visualMapImages'),
     url(r'^masterReset/', 'masterReset', name='masterReset'),
 
     # Uncomment the admin/doc line below to enable admin documentation:

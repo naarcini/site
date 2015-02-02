@@ -1,6 +1,7 @@
 from nicolas.shortcuts import template_response, json_response, html_response
 from nicolas.serverFunctions import RobotAction, UserInterfaceAction, MasterResetAction, BuildJsonResponse
 from nicolas.drawMap import VisualMapAction
+from nicolas.models import Robot
 import uuid
 
 def index(request):
@@ -24,7 +25,7 @@ def comingsoon(request):
     return template_response('comingsoon.html', response, request)
 
 def webapp(request):
-    response = {}
+    response = {'robotIds': list(Robot.objects.values_list('id', flat=True).order_by('id'))}
     return template_response('robotapp.html', response, request)
 
 def robot(request):
@@ -86,6 +87,13 @@ def visualMap(request):
         print 'Error: {0}'.format(str(ex))
         response = BuildJsonResponse(False, 'An unexpected server error occurred: {0}'.format(str(ex)))
     return json_response(response)
+
+def visualMapImages(request):
+    response = {}
+    if 'userId' in request.GET:
+        response['userId'] = request.GET['userId']
+
+    return template_response('robotMap.html', response, request)
 
 def masterReset(request):
     """
