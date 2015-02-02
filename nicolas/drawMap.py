@@ -1,6 +1,7 @@
 from nicolas.serverFunctions import BuildJsonResponse, IsOperationSuccess, GetRobotId, GetSpecificRobot, MapRobotDBToRobotObj
 from nicolas.dataObjects import MetaData, CellState
 from nicolas.models import Map, Waypoint
+from nicolas.settings import FILE_ROOT
 from PIL import Image
 import array
 import os
@@ -22,8 +23,8 @@ WAYPOINT_REAL_RGB = (0x00,0xcc,0x00)
 NUM_LAYERS = 4
 SCALE_FACTOR = int(2)
 CHANNELS = 3
-FILE_PATH = 'nicolas/static/images/layer{layerNum}_{userId}.png'
-FILE_BASE = 'nicolas/static/images/'
+FILE_PATH = os.path.join(FILE_ROOT, 'static/images/layer{layerNum}_{userId}.png')
+FILE_BASE = os.path.join(FILE_ROOT, 'static/images/')
 
 def ConvertCoordinates(x, y):
     """
