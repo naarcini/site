@@ -87,15 +87,14 @@ def ResetDb():
     """
     Master Reset of DB
     """
-    result = ClearRobot(None)
-    if not IsOperationSuccess(result):
-        return result
-
     if CheckMap():
         result = ResetMap()
     else:
         result = BuildMap()
+    if not IsOperationSuccess(result):
+        return result
 
+    result = ClearRobot(None)
     if not IsOperationSuccess(result):
         return result
 
