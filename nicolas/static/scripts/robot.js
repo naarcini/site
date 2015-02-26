@@ -5,6 +5,13 @@ var UI_URL = '/userInterface/';
 var MAP_URL = '/visualMap/';
 var MAP_HTML_URL = '/visualMapImages/';
 
+var alertHtml = '<div id="general-alert" class="alert alert-dismissible fade in" role="alert">' +
+                '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
+                    '<span aria-hidden="true">&times;</span>' +
+                '</button>' +
+                '<span id="general-alert-text"></span>' +
+                '</div>';
+
 // Events
 
 $('#robot-selector').on('change', function() {
@@ -37,16 +44,16 @@ $('#target-update').on('click', function() {
             function(data) {
                 if (data.status == 'ok')
                 {
-                    alert(data.details);
+                    generateAlert(0, data.details);
                 }
                 else
                 {
-                    alert('Server error: ' + data.details);
+                    generateAlert(1, 'Server error: ' + data.details);
                 }
             },
             'json'
         ).fail(function() {
-            alert('An unexpected error has occurred');
+            generateAlert(1, 'An unexpected error has occurred');
         });
     }
 });
@@ -80,6 +87,25 @@ $('#show-legend').on('click', function() {
 });
 
 // Functions
+function generateAlert(type, message)
+{
+    $('#alert-container').html(alertHtml);
+    $('#general-alert-text').html(message);
+
+    if (type == 0)
+    {
+        $('#general-alert').addClass('alert-success');
+    }
+    else if (type == 1)
+    {
+        $('#general-alert').addClass('alert-danger');
+    }
+    else
+    {
+        $('#general-alert').addClass('alert-info');
+    }
+}
+
 function getAllRobotData()
 {
     var robotId = $('#robot-selector').val();
@@ -112,12 +138,12 @@ function getAllRobotData()
                 }
                 else
                 {
-                    alert('Server error: ' + data.details);
+                    generateAlert(1, 'Server error: ' + data.details);
                 }
             },
             'json'
         ).fail(function() {
-            alert('An unexpected error has occurred');
+            generateAlert(1, 'An unexpected error has occurred');
         });
     }
     else
@@ -147,12 +173,12 @@ function generateRobotMap(robotId)
             }
             else
             {
-                alert('Server error: ' + data.details);
+                generateAlert(1, 'Server error: ' + data.details);
             }
         },
         'json'
     ).fail(function() {
-        alert('An unexpected error has occurred in building the map');
+        generateAlert(1, 'An unexpected error has occurred in building the map');
     });
 }
 
@@ -166,7 +192,7 @@ function loadRobotMap(userId)
     },
     'html'
     ).fail(function() {
-        alert('An unexpected error has occurred in loading the map');
+        generateAlert(1, 'An unexpected error has occurred in loading the map');
     });
 }
 
@@ -183,16 +209,16 @@ function deleteField(field)
             success: function(data) {
                 if (data.status == 'ok')
                 {
-                    alert(data.details);
+                    generateAlert(0, data.details);
                 }
                 else
                 {
-                    alert('Server error: ' + data.details);
+                    generateAlert(1, 'Server error: ' + data.details);
                 }
             },
             dataType: 'json'
         }).fail(function() {
-            alert('An unexpected error has occurred');
+            generateAlert(1, 'An unexpected error has occurred');
         });
         return jqxhr;
     }

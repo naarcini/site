@@ -2,69 +2,88 @@
 <html>
     <head>
         <title>IRNS Control</title>
+        <link href="{{ STATIC_URL }}styles/bootstrap.min.css" rel="stylesheet" type="text/css">
         <link href="{{ STATIC_URL }}styles/robot.css" rel="stylesheet" type="text/css">
         <script type="text/javascript" charset="utf-8" src="{{ STATIC_URL }}scripts/jquery-1.11.0.min.js"></script>
         <script type="text/javascript" charset="utf-8" src="{{ STATIC_URL }}scripts/jquery.mapbox.js"></script>
         <script type="text/javascript" charset="utf-8" src="{{ STATIC_URL }}scripts/jquery.mousewheel.js"></script>
         <script type="text/javascript" charset="utf-8" src="{{ STATIC_URL }}scripts/robot.js"></script>
+        <script type="text/javascript" charset="utf-8" src="{{ STATIC_URL }}scripts/bootstrap.min.js"></script>
     </head>
     <body>
-        <div id="title-container" class="white-box">
-            <h1>Indoor Robotic Navigation System</h1>
-        </div>
-        <div id="control-panel">
-            <div id="controls">
-                <select id="robot-selector">
-                    <option selected value="">Select a robot</option>
-                    {% if robotIds %}
-                    {% for robotId in robotIds %}
-                    <option value="{{ robotId }}">Robot {{ robotId }}</option>
-                    {% endfor %}
-                    {% endif %}
-                </select>
-                <br /> 
-                <div class="interface white-box" id="coordinates">
-                    <h2>Coordinates:</h2>
-                    <ul>
-                        <li>Estimated X: <span class="coordinate xPos">NONE</span></li>
-                        <li>Estimated Y: <span class="coordinate yPos">NONE</span></li>
-                        <li>Last Known X: <span class="coordinate xExactPos">NONE</span></li>
-                        <li>Last Known Y: <span class="coordinate yExactPos">NONE</span></li>
-                    </ul>
-                    <input type="button" id="coordinates-clear" value="Clear Real Waypoints" />
-                    <input type="button" id="coordinates-refresh" value="Refresh" />
-                </div>
-                <br />
-                <div class="interface white-box" id="target">
-                    <h2>Target:</h2>
-                    <ul>
-                        <li>X: <input type="number" class="coordinate xPos" placeholder="Target x coordinate" /></li>
-                        <li>Y: <input type="number" class="coordinate yPos" placeholder="Target y coordinate" /></li>
-                    </ul>
-                    <br />
-                    <input type="button" id="target-update" value="Update" />
-                    <input type="button" id="target-clear" value="Clear" />
-                </div>
-                <br />
-                <a href="#" id="show-legend">[+] Show Legend</a>
-                <br />
-                <div class="interface white-box" id="legend">
-                    <h2>Legend:</h2>
-                    <ul>
-                        <li><img alt="unexplored" src="{{ STATIC_URL }}images/legend/unexplored.png"> - An unexplored location</li>
-                        <li><img alt="empty" src="{{ STATIC_URL }}images/legend/empty.png"> - An empty location</li>
-                        <li><img alt="blocked" src="{{ STATIC_URL }}images/legend/blocked.png"> - A blocked location</li>
-                        <li><img alt="target" src="{{ STATIC_URL }}images/legend/target.png"> - The target position</li>
-                        <li><img alt="exactPosition" src="{{ STATIC_URL }}images/legend/exactPosition.png"> - Last known position found using IPS</li>
-                        <li><img alt="position" src="{{ STATIC_URL }}images/legend/position.png"> - Estimated current position</li>
-                        <li><img alt="waypoint" src="{{ STATIC_URL }}images/legend/waypoint.png"> - Planned path</li>
-                        <li><img alt="realWaypoint" src="{{ STATIC_URL }}images/legend/realWaypoint.png"> - Actual path taken according to IPS</li>
-                    </ul>
-                </div>
+        <div class="container">
+
+            <div class="page-header">
+                <h1>Indoor Robotic Navigation System</h1>
             </div>
 
-            <div id="map-viewport">
-                Please select a robot
+            <div id="alert-container"></div>
+
+            <div class="row">
+                <div class="col-md-4" id="controls">
+                    <select id="robot-selector">
+                        <option selected value="">Select a robot</option>
+                        {% if robotIds %}
+                        {% for robotId in robotIds %}
+                        <option value="{{ robotId }}">Robot {{ robotId }}</option>
+                        {% endfor %}
+                        {% endif %}
+                    </select>
+                    <br /><br /> 
+                    <div class="panel panel-default" id="coordinates">
+                        <div class="panel-heading">
+                            <h2 class="panel-title">Coordinates:</h2>
+                        </div>
+                        <div class="panel-body">
+                            <ul>
+                                <li>Estimated X: <span class="coordinate xPos">NONE</span></li>
+                                <li>Estimated Y: <span class="coordinate yPos">NONE</span></li>
+                                <li>Last Known X: <span class="coordinate xExactPos">NONE</span></li>
+                                <li>Last Known Y: <span class="coordinate yExactPos">NONE</span></li>
+                            </ul>
+                            <button type="button" id="coordinates-refresh" class="btn btn-success">Refresh</button>
+                            <button type="button" id="coordinates-clear" class="btn btn-warning">Clear Real Waypoints</button>
+                        </div>
+                    </div>
+                    <br />
+                    <div class="panel panel-default" id="target">
+                        <div class="panel-heading">
+                            <h2 class="panel-title">Target:</h2>
+                        </div>
+                        <div class="panel-body">
+                            <ul>
+                                <li>X: <input type="number" class="coordinate xPos" placeholder="Target x coordinate" /></li>
+                                <li>Y: <input type="number" class="coordinate yPos" placeholder="Target y coordinate" /></li>
+                            </ul>
+                            <br />
+                            <button type="button" id="target-update" class="btn btn-success">Update</button>
+                            <button type="button" id="target-clear" class="btn btn-warning">Clear</button>
+                        </div>
+                    </div>
+                    <button id="show-legend" class="btn btn-link" type="button">[+] Show Legend</button>
+                    <br />
+                    <div class="panel panel-default" id="legend">
+                        <div class="panel-heading">
+                            <h2 class="panel-title">Legend:</h2>
+                        </div>
+                        <div class="panel-body">
+                            <ul>
+                                <li><img alt="unexplored" src="{{ STATIC_URL }}images/legend/unexplored.png"> - An unexplored location</li>
+                                <li><img alt="empty" src="{{ STATIC_URL }}images/legend/empty.png"> - An empty location</li>
+                                <li><img alt="blocked" src="{{ STATIC_URL }}images/legend/blocked.png"> - A blocked location</li>
+                                <li><img alt="target" src="{{ STATIC_URL }}images/legend/target.png"> - The target position</li>
+                                <li><img alt="exactPosition" src="{{ STATIC_URL }}images/legend/exactPosition.png"> - Last known position found using IPS</li>
+                                <li><img alt="position" src="{{ STATIC_URL }}images/legend/position.png"> - Estimated current position</li>
+                                <li><img alt="waypoint" src="{{ STATIC_URL }}images/legend/waypoint.png"> - Planned path</li>
+                                <li><img alt="realWaypoint" src="{{ STATIC_URL }}images/legend/realWaypoint.png"> - Actual path taken according to IPS</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-8" id="map-viewport">
+                    Please select a robot
+                </div>
             </div>
         </div>
     </body>

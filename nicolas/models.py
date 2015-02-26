@@ -32,7 +32,7 @@ class Waypoint(models.Model):
     Stores the array of waypoints associated with a robot
     """
     robotId = models.ForeignKey(Robot)
-    realWaypoint = models.BooleanField()
+    realWaypoint = models.BooleanField(default = False)
     x = models.IntegerField()
     y = models.IntegerField()
 
