@@ -6,6 +6,7 @@ from PIL import Image
 import array
 import os
 import re
+import time
 
 # Map colours
 UNEXPLORED_RGB = (0x88,0x88,0x88)
@@ -20,6 +21,7 @@ WAYPOINT_RGB = (0x99,0x00,0x99)
 WAYPOINT_REAL_RGB = (0x00,0xcc,0x00)
 
 # Other constants. Must scale by an integer factor
+PROFILING = True
 NUM_LAYERS = 4
 SCALE_FACTOR = int(2)
 CHANNELS = 3
@@ -93,11 +95,18 @@ def DrawMap(params, userId):
     650x650, 1300x1300, 2600x2600, and 5200x5200 (layer1, layer2, layer3, layer4)
     """
     # Create the map array for the base case
+    if PROFILING:
+        start = time.time()
     image = array.array('B', [0x00 for i in range(0, CHANNELS * MetaData.yMax * MetaData.xMax)])
 
     idx = 0
     px = 0
     mapDB = array.array('B', Map.objects.order_by('-y', 'x').values_list('state', flat=True))
+
+    if PROFILING:
+        end = time.time()
+        print 'Time to get list: ' + str(end - start)
+        start = time.time()
     for yPos in range(0, MetaData.yMax):
         for xPos in range(0, MetaData.xMax):
             pixel = mapDB[px]
@@ -161,20 +170,36 @@ def DrawMap(params, userId):
             for i in range(0, CHANNELS):
                 image[coord + i] = ROBOT_EXACT_RGB[i]
 
+    if PROFILING:
+        end = time.time()
+        print 'Time to build image array: ' + str(end - start)
+        start = time.time()
+
     # Draw the map and save as layer1.png
     im = Image.frombuffer('RGB', (MetaData.xMax, MetaData.yMax), image, 'raw', 'RGB', 0, 1)
     im.save(FILE_PATH.format(layerNum = 1, userId = userId))
+
+    if PROFILING:
+        end = time.time()
+        print 'Layer 1: ' + str(end - start)
 
     # Create upscaled copies of original map
     width = MetaData.xMax
     height = MetaData.yMax
     layerNum = 2
     while layerNum <= NUM_LAYERS:
+        if PROFILING:
+            start = time.time()
+
         width *= SCALE_FACTOR
         height *= SCALE_FACTOR
 
         out = im.resize((width, height))
         out.save(FILE_PATH.format(layerNum = layerNum, userId = userId))
+
+        if PROFILING:
+            end = time.time()
+            print 'Layer ' + str(layerNum) + ': ' + str(end - start)
 
         layerNum += 1
 
