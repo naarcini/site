@@ -35,6 +35,8 @@ $('#target-update').on('click', function() {
     var robotId = $('#robot-selector').val();
     if (robotId)
     {
+        $('#general-alert').alert('close');
+
         var x = parseInt($('#target').find('.xPos').val());
         var y = parseInt($('#target').find('.yPos').val());
 
@@ -111,6 +113,8 @@ function getAllRobotData()
     var robotId = $('#robot-selector').val();
     if (robotId)
     {
+        $('#general-alert').alert('close');
+
         $.get(
             ROBOT_URL + '?robotId=' + robotId,
             function(data) {
@@ -202,6 +206,8 @@ function deleteField(field)
     var robotId = $('#robot-selector').val();
     if (robotId)
     {
+        $('#general-alert').alert('close');
+
         var jqxhr = $.ajax({
             type: 'DELETE',
             url: UI_URL + '?robotId=' + robotId,

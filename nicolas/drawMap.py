@@ -101,7 +101,7 @@ def DrawMap(params, userId):
 
     idx = 0
     px = 0
-    mapDB = array.array('B', Map.objects.order_by('-y', 'x').values_list('state', flat=True))
+    mapDB = array.array('B', Map.objects.order_by('id').values_list('state', flat=True))
 
     if PROFILING:
         end = time.time()

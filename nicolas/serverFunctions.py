@@ -58,11 +58,12 @@ def BuildMap():
 
     print "Starting to build map"
 
-    for i in range(-MetaData.origin.x, MetaData.xMax - MetaData.origin.x):
-        for j in range(-MetaData.origin.y, MetaData.yMax - MetaData.origin.y):
-            cell = Map(x = i, y = j, state = CellState.unexplored)
-            cell.save()
+    cellList = []
+    for i in reversed(range(-MetaData.origin.y, MetaData.yMax - MetaData.origin.y)):
+        for j in range(-MetaData.origin.x, MetaData.xMax - MetaData.origin.x):
+            cellList.append(Map(x = j, y = i, state = CellState.unexplored))
 
+    Map.objects.bulk_create(cellList)
     print "Finished building map"
 
     return BuildJsonResponse(True, 'Successfully regenerated map')
