@@ -389,8 +389,22 @@ def RobotAction(params, body, method):
         response['robot'] = robot.Dictify()
 
     elif method == "DELETE":
-        # Wipe all robot related data
-        response = ClearRobot(robotId)
+        # Find action to perform (Preserve original behaviour)
+        result = TextToJson(body)
+        if not IsOperationSuccess(result):
+            return ClearRobot(robotId)
+
+        rawData = result['rawData']
+        if 'data' not in rawData:
+            return BuildJsonResponse(False, 'Must specify what sort of thing to delete')
+
+        robotId = GetRobotId(params)
+        if rawData['data'] == 'instruction':
+            response = ResetInstruction(robotId)
+        elif rawData['data'] == 'robot':
+                response = ClearRobot(robotId)
+        else:
+            response = BuildJsonResponse(False, 'Specify instruction or robot in data field')
 
     else:
         response = BuildJsonResponse(False, 'Must use GET, POST, or DELETE')

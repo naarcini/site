@@ -21,7 +21,7 @@ WAYPOINT_RGB = (0x99,0x00,0x99)
 WAYPOINT_REAL_RGB = (0x00,0xcc,0x00)
 
 # Other constants. Must scale by an integer factor
-PROFILING = True
+PROFILING = False
 NUM_LAYERS = 4
 SCALE_FACTOR = int(2)
 CHANNELS = 3
