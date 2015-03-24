@@ -57,3 +57,8 @@ h1
 {
     display: none;
 }
+
+#robot-ip-field
+{
+    color: #FFF;
+}

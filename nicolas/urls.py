@@ -19,6 +19,7 @@ urlpatterns = patterns('nicolas.views',
     url(r'^visualMap/', 'visualMap', name='visualMap'),
     url(r'^visualMapImages/', 'visualMapImages', name='visualMapImages'),
     url(r'^masterReset/', 'masterReset', name='masterReset'),
+    url(r'^localip/', 'localip', name='localip'),
 
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),

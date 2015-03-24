@@ -1,5 +1,5 @@
 from nicolas.dataObjects import Coordinate, MetaData, RobotObject, CellState, Cell
-from nicolas.models import Robot, Map, Waypoint
+from nicolas.models import Robot, Map, Waypoint, Misc
 from ast import literal_eval
 import json
 
@@ -100,6 +100,7 @@ def ResetDb():
     if not IsOperationSuccess(result):
         return result
 
+    Misc.objects.all().delete()
     return BuildJsonResponse(True, 'Successfully reset DB')
 
 # Parse Input functinos
@@ -535,4 +536,35 @@ def MasterResetAction(params, body, method):
         response = BuildJsonResponse(False, 'Must use DELETE. Are you sure you want to do this?')
 
     return response
+
+# Save IP endpoint
+def LocalIpAction(params, method):
+    """
+    Performs actions required by local ip
+    """
+    if method == "GET":
+        ip = '0.0.0.0'
+        try:
+            ip = Misc.objects.get(name = 'ip').value
+        except Misc.DoesNotExist:
+            return BuildJsonResponse(False, 'Ip not yet set')
+        except Misc.MultipleObjectsReturned:
+            return BuildJsonResponse(False, 'Somehow multiple values of ip')
+
+        response = BuildJsonResponse(True, 'Successfully acquired data')
+        response['ip'] = ip
+        return response
+
+    elif method == "POST":
+        if 'ip' in params:
+            ipEntry = Misc(name = 'ip', description = 'Local IP at Symposium', value = str(params['ip']))
+            ipEntry.save()
+
+            response = BuildJsonResponse(True, 'Successfully updated ip')
+            response['ip'] = str(params['ip'])
+            return response
+        else:
+            return BuildJsonResponse(False, 'No ip parameter found')
+    else:
+        return BuildJsonResponse(False, 'Use GET method')
 

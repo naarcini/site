@@ -39,3 +39,16 @@ class Waypoint(models.Model):
     def __unicode__(self):
         return "robotId: {robotId}; x: {x}; y: {y}" \
                 .format(robotId = self.robotId, x = self.x, y = self.y)
+
+class Misc(models.Model):
+    """
+    Additional data
+    """
+    name = models.CharField(max_length=30)
+    description = models.CharField(max_length=500)
+    value = models.CharField(max_length=100)
+
+    def __unicode__(self):
+        return "{name} - {description}: {value}" \
+                .format(name = self.name, description = self.description, value = self.value)
+

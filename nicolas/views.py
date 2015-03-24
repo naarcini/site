@@ -1,7 +1,7 @@
 from nicolas.shortcuts import template_response, json_response, html_response
-from nicolas.serverFunctions import RobotAction, UserInterfaceAction, MasterResetAction, BuildJsonResponse
+from nicolas.serverFunctions import RobotAction, UserInterfaceAction, MasterResetAction, LocalIpAction, BuildJsonResponse
 from nicolas.drawMap import VisualMapAction
-from nicolas.models import Robot
+from nicolas.models import Robot, Misc
 import uuid
 
 def index(request):
@@ -25,7 +25,7 @@ def comingsoon(request):
     return template_response('comingsoon.html', response, request)
 
 def webapp(request):
-    response = {'robotIds': list(Robot.objects.values_list('id', flat=True).order_by('id'))}
+    response = {'robotIds': list(Robot.objects.values_list('id', flat=True).order_by('id')), 'ips': list(Misc.objects.values_list('value', flat=True).order_by('id'))}
     return template_response('robotapp.html', response, request)
 
 def robot(request):
@@ -105,6 +105,21 @@ def masterReset(request):
     """
     try:
         response = MasterResetAction(request.GET, request.read(), request.method)
+    except Exception as ex:
+        print 'Error: {0}'.format(str(ex))
+        response = BuildJsonResponse(False, 'An unexpected server error occurred {0}'.format(str(ex)))
+    return json_response(response)
+
+def localip(request):
+    """
+    Usage:
+        For symposium, just save the IP of the robot
+
+    POST:
+        Save this IP for this robot
+    """
+    try:
+        response = LocalIpAction(request.GET, request.method)
     except Exception as ex:
         print 'Error: {0}'.format(str(ex))
         response = BuildJsonResponse(False, 'An unexpected server error occurred {0}'.format(str(ex)))

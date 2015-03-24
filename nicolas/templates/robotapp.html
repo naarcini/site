@@ -29,7 +29,16 @@
                         {% endfor %}
                         {% endif %}
                     </select>
-                    <br /><br />
+                    <br />
+                    <div id="robot-ip-field">
+                        {% if ips %}
+                            {% with ips|last as ip %}
+                                {{ ip }}
+                            {% endwith %}
+                        {% else %}
+                            <br />
+                        {% endif %}
+                    </div>
                     <div class="panel panel-default" id="coordinates">
                         <div class="panel-heading">
                             <h2 class="panel-title">Coordinates:</h2>
